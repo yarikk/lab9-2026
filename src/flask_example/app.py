@@ -1,37 +1,54 @@
-from flask import Flask, render_template, request, redirect, url_for
+import secrets
+import string
+from flask import Flask, redirect, render_template, request, url_for
 
 app = Flask(__name__)
 
-tasks = []
-task_id_counter = 0
+# Список для зберігання паролів
+passwords = []
+password_id_counter = 0
+
 
 @app.route('/')
 def index():
-    return render_template('index.html', tasks=tasks)
+  return render_template('index.html', passwords=passwords)
 
+
+# Додавання нового запису (сервіс, логін, пароль)
 @app.route('/add', methods=['POST'])
 def add():
-    global task_id_counter
-    task_content = request.form['content']
-    if task_content:
-        task_id_counter += 1
-        new_task = {'id': task_id_counter, 'content': task_content, 'done': False}
-        tasks.append(new_task)
-    return redirect(url_for('index'))
+  global password_id_counter
+  service = request.form['service']
+  username = request.form['username']
+  password = request.form['password']
 
-@app.route('/done/<int:id>')
-def done(id):
-    for task in tasks:
-        if task['id'] == id:
-            task['done'] = True
-            break
-    return redirect(url_for('index'))
+  if service and username and password:
+    password_id_counter += 1
+    new_entry = {
+        'id': password_id_counter,
+        'service': service,
+        'username': username,
+        'password': password,
+    }
+    passwords.append(new_entry)
+  return redirect(url_for('index'))
 
+
+# Видалення запису за ID
 @app.route('/delete/<int:id>')
 def delete(id):
-    global tasks
-    tasks = [task for task in tasks if task['id'] != id]
-    return redirect(url_for('index'))
+  global passwords
+  passwords = [item for item in passwords if item['id'] != id]
+  return redirect(url_for('index'))
+
+
+# Генерація випадкового надійного пароля
+@app.route('/generate')
+def generate():
+  alphabet = string.ascii_letters + string.digits + '!@#$%^&*'
+  generated_pass = ''.join(secrets.choice(alphabet) for _ in range(12))
+  return {'password': generated_pass}
+
 
 if __name__ == '__main__':
-    app.run(debug=True)
+  app.run(debug=True)

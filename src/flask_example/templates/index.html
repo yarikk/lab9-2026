@@ -1,29 +1,39 @@
 <!DOCTYPE html>
-<html>
+<html lang="uk">
 <head>
-    <title>To-Do List</title>
+    <meta charset="UTF-8">
+    <title>Менеджер паролів</title>
 </head>
 <body>
-    <h1>My To-Do List</h1>
+    <h1>Мій менеджер паролів</h1>
 
+    <!-- Виведення списку збережених паролів -->
     <ul>
-        {% for task in tasks %}
+        {% for item in passwords %}
             <li>
-                {% if task.done %}
-                    <strike>{{ task.content }}</strike>
-                {% else %}
-                    {{ task.content }}
-                {% endif %}
-                <a href="{{ url_for('done', id=task.id) }}">Done</a>
-                <a href="{{ url_for('delete', id=task.id) }}">Delete</a>
+                <b>{{ item.service }}</b> | Логін: {{ item.username }} | Пароль: {{ item.password }}
+                <a href="{{ url_for('delete', id=item.id) }}">Видалити</a>
             </li>
         {% endfor %}
     </ul>
 
-    <h2>Add New Task</h2>
+    <!-- Форма додавання нового запису -->
+    <h2>Додати новий пароль</h2>
     <form action="{{ url_for('add') }}" method="post">
-        <input type="text" name="content" placeholder="Enter task description">
-        <button type="submit">Add Task</button>
+        <input type="text" name="service" placeholder="Сервіс (напр. Gmail)" required>
+        <input type="text" name="username" placeholder="Логін або Email" required>
+        <input type="text" id="password-field" name="password" placeholder="Пароль" required>
+        <button type="button" onclick="generatePassword()">Згенерувати</button>
+        <button type="submit">Додати пароль</button>
     </form>
+
+    <!-- Скрипт підстановки згенерованого пароля у поле вводу -->
+    <script>
+        async function generatePassword() {
+            const response = await fetch('/generate');
+            const data = await response.json();
+            document.getElementById('password-field').value = data.password;
+        }
+    </script>
 </body>
 </html>
